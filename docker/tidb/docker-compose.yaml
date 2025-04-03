@@ -1,0 +1,40 @@
+services:
+  pd0:
+    image: pingcap/pd:v8.5.1
+    ports:
+      - "2379"
+    command:
+      - --name=pd0
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pd0:2379
+      - --advertise-peer-urls=http://pd0:2380
+      - --initial-cluster=pd0=http://pd0:2380
+    restart: on-failure
+  tikv:
+    image: pingcap/tikv:v8.5.1
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=tikv:20160
+      - --status-addr=tikv:20180
+      - --pd=pd0:2379
+    depends_on:
+      - "pd0"
+    restart: on-failure
+  tidb:
+    image: pingcap/tidb:v8.5.1
+    ports:
+       - "4000:4000"
+    command:
+      - --advertise-address=tidb
+      - --store=tikv
+      - --path=pd0:2379
+    depends_on:
+      - "tikv"
+    restart: on-failure
+  tiflash:
+    image: pingcap/tiflash:v8.5.1
+    depends_on:
+      - "tikv"
+      - "tidb"
+    restart: on-failure

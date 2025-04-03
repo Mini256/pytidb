@@ -3,6 +3,18 @@ install:
 	@pip install uv
 	@uv sync
 
+install_dev:
+	@uv sync --all-extras --dev
+
+pre_commit:
+	@uv run pre-commit install
+
+lint:
+	@PYTHONPATH=$(PWD) uv tool run ruff check
+
+format:
+	@PYTHONPATH=$(PWD) uv tool run ruff format
+
 test:
 	@PYTHONPATH=$(PWD) uv run pytest tests
 
